@@ -1,3 +1,5 @@
+#This is the key monitoring backend for the TASQC Key Transfer Engine.
+
 ## Prerequisites:
 Java 7 JDK
 
@@ -23,7 +25,7 @@ Run
 
 Then execute with
 
->java -jar target/keytrans-server-<version>.jar
+>java -jar target/keytrans-server-&lt;version>.jar
 
 ## Build instructions for the client:
 

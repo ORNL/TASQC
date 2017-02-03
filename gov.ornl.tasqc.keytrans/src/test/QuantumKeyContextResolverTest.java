@@ -1,8 +1,8 @@
+/**----------------------------------------------------------------------------
 Copyright (c) 2015-, UT-Battelle LLC
 All rights reserved.
 
-Authors: Jay Jay Billings, Jason Bonior, Phil Evans, Alex McCaskey, 
-         Robert Smith
+Authors: Jay Jay Billings, Phil Evans, Alex McCaskey
 Author Contact: Phil Evans, evanspg@ornl.gov
 
 Redistribution and use in source and binary forms, with or without
@@ -29,3 +29,42 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-----------------------------------------------------------------------------*/
+package test;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import org.junit.Test;
+
+import gov.ornl.tasqc.keytrans.QuantumKeyContext;
+import gov.ornl.tasqc.keytrans.QuantumKeyContextResolver;
+
+/**
+ * This class is responsible for testing the QuantumKeyContextResolver to make
+ * sure that it can properly return the QuantumKeyContext once it is set.
+ * 
+ * @author Jay Jay Billings
+ *
+ */
+public class QuantumKeyContextResolverTest {
+
+	/**
+	 * This operation makes sure the QuantumKeyContext can be retrieved.
+	 */
+	@Test
+	public void testGetContext() {
+
+		// Make sure it doesn't have a context by default.
+		QuantumKeyContextResolver resolver = new QuantumKeyContextResolver();
+		assertNull(resolver.getContext(null));
+
+		// Set the context and make sure it comes back when requested.
+		QuantumKeyContext context = new QuantumKeyContext();
+		QuantumKeyContextResolver.setQuantumKeyContext(context);
+		assertNotNull(resolver.getContext(null));
+
+		return;
+	}
+
+}
