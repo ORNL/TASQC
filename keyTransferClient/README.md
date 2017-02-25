@@ -35,7 +35,7 @@ bash
 make test
 ```
 
-Build flags, such as `-Wal`l, can be set by prepending the `CXX_FLAGS` variable to 
+Build flags, such as `-Wall`, can be set by prepending the `CXX_FLAGS` variable to 
 the cmake command as such
 
 If you want to install the compiled product to your system you can run the `make install` command to finish it.
