@@ -30,7 +30,7 @@ make
 The above will get the code running, but it will not run the tests. 
 Issue the following command to do that:
 
-```
+```sh
 bash
 make test
 ```
@@ -41,7 +41,7 @@ the cmake command as such
 If you want to install the compiled product to your system you can run the `make install` command to finish it.
 If you want to install the client to a particularly directory, you can do that by setting the install prefix:
 
-```
+```sh
 cmake ../keyTransferClient -DCMAKE_INSTALL_PREFIX=<directory_you_want> <other cmake arguments>
 make
 make install
