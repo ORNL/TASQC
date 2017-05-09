@@ -91,23 +91,20 @@ public class QuantumKeyContextTest {
 	public void testGetNextKey() throws IOException, InterruptedException {
 
 		// Open the reference key file
-		FileReader fileReader = new FileReader("SecretKey.log");
+		FileReader fileReader = new FileReader("keys.txt");
 		BufferedReader reader = new BufferedReader(fileReader);
 		String line;
 		ArrayList<String> lines = new ArrayList<String>();
-
 		// Load the keys continuously until the service is shutdown.
 		while ((line = reader.readLine()) != null) {
 			lines.add(line);
 		}
-
 		// Clean up shop
 		reader.close();
 		// Start checking keys
 		for (int i = 0; i < lines.size(); i++) {
-			assertEquals(lines.get(i), context.getNextKey());
+			assertEquals(lines.get(i), context.getNextKey().getKey());
 		}
-
 		return;
 	}
 
