@@ -35,10 +35,13 @@ package gov.ornl.tasqc.keytrans;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BinaryOperator;
 
 /**
  * This class reads quantum keys from the key database and makes them available
@@ -73,7 +76,7 @@ public class QuantumKeyContext implements Runnable {
 	/**
 	 * The name of the file where quantum keys are stored.
 	 */
-	private String keyFileName = "keyDB.txt";
+	private String keyFileName = "keys.txt";
 
 	/**
 	 * True if the quantum key context is loading keys and operating normally,
@@ -93,10 +96,22 @@ public class QuantumKeyContext implements Runnable {
 	private Thread eventLoop;
 
 	/**
+	 * TODO Replace this with an encrypted file that is read from and regularly
+	 * pruned as keys age to the point they are not likely to be retrieved. A
+	 * map of previously served keys, indexed by their ID numbers.
+	 */
+	private Map<Integer, QuantumKey> keyMap;
+
+	/**
 	 * This is the minimum fraction of the queue's keys that should be left
 	 * before it is reloaded.
 	 */
 	private float minQueueLoadFraction = 0.1f;
+
+	/**
+	 * The unique identifier that will be sent with the next key
+	 */
+	private AtomicReference<Integer> nextID;
 
 	/**
 	 * Constructor
@@ -107,6 +122,12 @@ public class QuantumKeyContext implements Runnable {
 
 		// No keys are available yet
 		nextKey = new AtomicReference<String>("");
+
+		// Initialize the ID counter
+		nextID = new AtomicReference<Integer>(0);
+
+		// Initialize the old key map
+		keyMap = new HashMap<Integer, QuantumKey>();
 	}
 
 	/**
@@ -187,7 +208,8 @@ public class QuantumKeyContext implements Runnable {
 		Thread.sleep(1000);
 		// Throw the exception if the keys can't be loaded.
 		if (!"".equals(nextKey.get())) {
-			throw new Exception("Unable to load keys! Do not use this Context!");
+			throw new Exception(
+					"Unable to load keys! Do not use this Context!");
 		}
 		// Set the initial key value since keys have been loaded.
 		nextKey.set(keyQueue.take());
@@ -247,6 +269,20 @@ public class QuantumKeyContext implements Runnable {
 	}
 
 	/**
+	 * The operation retrieves a previously obtained key, which had been created
+	 * with the getNextKey() method, based on the specified ID.
+	 * 
+	 * @param Id
+	 *            The ID number of the key which is to be retrieved. This must
+	 *            be non-negative.
+	 * @return The previously generated key with the given Id number, or null if
+	 *         no such key exists.
+	 */
+	public QuantumKey getKeyById(int Id) {
+		return keyMap.get(Id);
+	}
+
+	/**
 	 * This operation retrieves the next available quantum key. It will
 	 * automatically discard the key unless there are no other keys left in the
 	 * queue.
@@ -256,22 +292,39 @@ public class QuantumKeyContext implements Runnable {
 	 *             This exception is thrown if the next key cannot be properly
 	 *             retrieved.
 	 */
-	public String getNextKey() throws InterruptedException {
+	public QuantumKey getNextKey() throws InterruptedException {
 
 		// In practice this strategy could fail if the queue is being quickly
 		// depleted because multiple values of the same key will return while
 		// the key queue is being repopulated. Let's see how it works for now,
 		// but it may require some better logic to handle that situation.
 
-		String key;
+		String keyString;
 		if (keyQueue.size() >= 1) {
 			// Load the key if there are extra keys available and replace it
 			// with the next key in the queue.
-			key = nextKey.getAndSet(keyQueue.take());
+			keyString = nextKey.getAndSet(keyQueue.take());
 		} else {
 			// Just return the current key since it is the last key.
-			key = nextKey.get();
+			keyString = nextKey.get();
 		}
+
+		// The key under construction
+		QuantumKey key = new QuantumKey();
+
+		// Assign the next available id to this key and increment the next id
+		key.setId(nextID.getAndAccumulate(1, new BinaryOperator<Integer>() {
+			@Override
+			public Integer apply(Integer m, Integer n) {
+				return m + n;
+			}
+		}));
+
+		// Set the converted data to the key
+		key.setKey(keyString);
+
+		// Add the key to the map
+		keyMap.put(key.getId(), key);
 
 		return key;
 	}
