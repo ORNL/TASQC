@@ -76,7 +76,7 @@ public class QuantumKeyContext implements Runnable {
 	/**
 	 * The name of the file where quantum keys are stored.
 	 */
-	private String keyFileName = "keys.txt";
+	private String keyFileName = "keyDB.txt";
 
 	/**
 	 * True if the quantum key context is loading keys and operating normally,
@@ -159,9 +159,11 @@ public class QuantumKeyContext implements Runnable {
 				keyFileName = tmpKeyFileName;
 			}
 			// Set the max queue size
+			if(props.get("queueSize") != null) {
 			int tmpMaxQueueSize = (int) props.get("queueSize");
 			if (tmpMaxQueueSize > 0) {
 				maxQueueSize = tmpMaxQueueSize;
+			}
 			}
 		} else {
 			// Set an error message and throw the exception. Note a

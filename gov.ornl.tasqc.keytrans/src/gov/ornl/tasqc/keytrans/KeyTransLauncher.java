@@ -34,10 +34,12 @@ package gov.ornl.tasqc.keytrans;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Properties;
 
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.StaticHttpHandler;
@@ -91,17 +93,43 @@ public class KeyTransLauncher {
 
 	/**
 	 * This operation loads the keys from the IDQ key file.
+	 * 
+	 * @param secretFile The name of the file containing the secret key. Defaults to "SecretKey.log" if null.
 	 */
-	public static void parseKeyFile() {
+	public static void parseKeyFile(Properties props) {
 		try {
+			
+			
+			String secretFile = props.getProperty("secretKeyFile", "SecretKey.log");
+			String fileFormat = props.getProperty("secretKeyFormat");
+			
+			
+			
 			// Open the IDQ file
-			FileReader fileReader = new FileReader("SecretKey.log");
+			FileReader fileReader = new FileReader(secretFile);
 			BufferedReader reader = new BufferedReader(fileReader);
 			String line;
 			// Open the key database file for this program
 			FileWriter fileWriter = new FileWriter("keyDB.txt");
 			BufferedWriter writer = new BufferedWriter(fileWriter);
 
+			// For file where, each line contains one bit.
+			if("BitPerLine".equals(fileFormat)) {
+				String key = "";
+				
+				//Continue reading until end of file
+				while((line = reader.readLine()) != null) {
+					
+					//Add the current bit to the key, then if it is the correct size, write the key and begin a new one.
+					key += line;
+					if(key.length() == 768) {
+						writer.write(key);
+						writer.newLine();
+						key = "";
+					}
+				}
+			} else {
+			
 			// Read the key from the file.
 			while ((line = reader.readLine()) != null) {
 				// The key is the line after the line denoted "KEY"
@@ -118,6 +146,7 @@ public class KeyTransLauncher {
 						writer.newLine();
 					}
 				}
+			}
 			}
 
 			// Clean up shop
@@ -149,12 +178,20 @@ public class KeyTransLauncher {
 				.format("Quantum Key Transfer Engine launched at "
 						+ "%s\nHit enter to stop it...", BASE_URI);
 
-		parseKeyFile();
+		//The properties from the command line arguements
+		Properties props = new Properties();
+		
+		//Load the properties
+		FileInputStream inStream = new FileInputStream("config.properties");
+		props.load(inStream);
+		
+		parseKeyFile(props);
 
 		// Start the key reading service
 		QuantumKeyContext keyContext = new QuantumKeyContext();
+		keyContext.setProperties(props);
 		keyContext.start();
-		// keyContext.setProperties(null); //FIXME! Add properties support.
+		
 		// Set the QuantumKeyContext on its Resolver so that Jersey can load it
 		// into the server when asked.
 		QuantumKeyContextResolver.setQuantumKeyContext(keyContext);
