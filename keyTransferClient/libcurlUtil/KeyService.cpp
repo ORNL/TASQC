@@ -94,6 +94,29 @@ std::string KeyService::getKey(const std::string & lastKey) {
 	return response;
 }
 
+std::string KeyService::getKey(const std::string & lastKey,
+		const std::string & keyId) {
+	// Just add the last key onto the prefix and send it.
+	std::string url = getPrefix + lastKey;
+
+	//Append the keyId parameter to the url, if one exists
+	if (!keyId.empty()) {
+		url += "&keyId=" + keyId;
+	}
+
+	// Issue the GET request to the HTTPInteface object
+	std::string response = http->get(url, "user", "password");
+
+	// Check for GET errors, if none, increment the Id counter.
+	if (response != "CURL could not be initialized."
+			&& response.find("returned HTTP code") == std::string::npos) {
+		keyCounter++;
+	}
+
+	// Return the response.
+	return response;
+}
+
 int KeyService::getKeyId() {
 	return keyCounter;
 }
