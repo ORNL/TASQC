@@ -51,7 +51,7 @@ From the base directory where you checked out the repository:
 ```sh
 mkdir keyTransferClient-build
 cd keyTransferClient-build
-cmake ../keyTransferClient-build
+cmake ../keyTransferClient
 ```
 
 You may pick any build directory you want, actually. Just replace `../` with the directory.
