@@ -40,7 +40,7 @@ SET(LIBRARY_NAME "curlUtil")
 
 #Collect all header filenames in this project 
 #and glob them in HEADERS
-file(GLOB HEADERS *.h)
+file(GLOB HEADERS *.h *.hpp)
 
 #Grab all of the source files
 file(GLOB SRC *.cpp)
